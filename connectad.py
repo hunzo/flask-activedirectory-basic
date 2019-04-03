@@ -48,6 +48,7 @@ def convert_entries_to_list(user_entries):
 
 
 class ActiveDirectoryAPI:
+    # //Check Authentication
     def ad_auth_ldap(self, adserver, domain, user, password):
         s = Server(adserver, get_info=ALL)
         user_dn = user + '@' + domain
@@ -59,6 +60,7 @@ class ActiveDirectoryAPI:
         r = c.result
         return r
 
+    # //Get Attributes "Non" Standards ex. extensionattribute1, optionalemail
     def get_attributes_ad(self, adserver, ousearch, binduser, password, usersearch):
         filters = '(&(objectclass=person)(name=' + usersearch + '))'
         server = Server(adserver, get_info=ALL)
@@ -81,3 +83,38 @@ class ActiveDirectoryAPI:
         conn.unbind()
 
         return results
+
+    # //Get Attributes Standards
+    def get_attributes_ad_standard(self, adserver, ousearch, binduser, password, usersearch):
+        filters = '(&(objectclass=person)(name=' + usersearch + '))'
+        server = Server(adserver, get_info=ALL)
+
+        attribs = ['CN', 'Distinguishedname', 'displayname', 'mail', 'department', 'samaccountname',
+            'lastlogontimestamp', 'info', 'pwdlastset', 'accountexpires', 'accountexpires', 'memberof','title', 'objectclass','userPrincipalName']
+        
+        try:
+            conn = Connection(server, binduser, password, auto_bind=True)
+            conn.search(ousearch, filters, attributes = attribs)
+            entry = conn.response
+        except Exception as e:
+            print('ERROR--------------->{}', e)
+        print(conn.entries[0].entry_to_ldif()) 
+        conn.unbind()
+        user = []
+        for ex in entry:
+            user_data = {}
+            user_data['Displayname'] = ex['attributes']['Displayname']
+            user_data['Distinguishedname'] = ex['attributes']['distinguishedname']
+            user_data['Email'] = ex['attributes']['mail']
+            user_data['department'] = ex['attributes']['department']
+            user_data['sAMAccountname'] = ex['attributes']['samaccountname']
+            user_data['LastLogon'] = ex['attributes']['lastlogontimestamp']
+            user_data['info'] = ex['attributes']['info']
+            user_data['LastPwdChange'] = ex['attributes']['pwdlastset']
+            user_data['AccountExpires'] = ex['attributes']['accountExpires']
+            user_data['MemberOf'] = ex['attributes']['memberof']
+            user_data['title'] = ex['attributes']['title']
+            user_data['objectClass'] = ex['attributes']['objectClass']
+            user_data['userPrincipalName'] = ex['attributes']['userPrincipalName']
+            user.append(user_data)
+        return user
