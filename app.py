@@ -5,7 +5,7 @@ from connectad import *
 app = Flask(__name__)
 @app.route('/')
 def main():
-    return('TEST')
+    return render_template('index.html')
 
 @app.route('/api/ad/auth', methods=['POST'])
 def ad_auth():
@@ -44,6 +44,27 @@ def ad_get_info():
         
         c = ActiveDirectoryAPI()
         rs = c.get_attributes_ad(adserver,ousearch,binduser,bindpassword,searchuser)
+        print(rs)
+        return jsonify(rs)
+    return 'NONE'
+
+@app.route('/api/adstandard/searchinfo', methods=['POST'])
+def ad_get_standard_info():
+    if request.method == 'POST':
+        results = request.get_json('adserver')
+        results = request.get_json('ousearch')
+        results = request.get_json('binduser')
+        results = request.get_json('bindpassword')
+        results = request.get_json('searchuser')
+        
+        adserver = results['adserver']
+        ousearch = results['ousearch']
+        binduser = results['binduser']
+        bindpassword =  results['bindpassword']
+        searchuser = results['searchuser']
+        
+        conn = ActiveDirectoryAPI()
+        rs = conn.get_attributes_ad_standard(adserver,ousearch,binduser,bindpassword,searchuser)
         print(rs)
         return jsonify(rs)
     return 'NONE'
