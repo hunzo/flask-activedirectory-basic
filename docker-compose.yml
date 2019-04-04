@@ -3,6 +3,6 @@ services:
     web:
         build: .
         ports:
-            - "5002:5000"
+            - "5003:5000"
         volumes:
             - .:/code
